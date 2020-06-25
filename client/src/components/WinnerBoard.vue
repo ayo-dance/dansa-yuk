@@ -29,7 +29,7 @@ export default {
         this.newId++
         let newplayer = {
                     id: this.newId,
-                    name: 'new player',
+                    name: 'player ' + this.newId,
                     score: Math.ceil(Math.random() * 100),
                     }
         let index = 0
