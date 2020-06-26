@@ -52,6 +52,9 @@ export default new Vuex.Store({
       }
       socket.emit("joinRoom", payload )
       
+    },
+    newRoom() {
+      console.log("ini newRoom")
     }
   },
   modules: {},
