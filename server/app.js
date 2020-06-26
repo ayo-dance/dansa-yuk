@@ -30,6 +30,9 @@ io.on('connection', (socket) => {
     if (score.length >= maxPlayer) {
       for (const player of score) {
         if (player.score >= winner.score) winner = player;
+  
+        // Game selesai
+        // socket.broadcast.emit('send-score', score);
       }
       socket.broadcast.emit('game-winner', winner);
       playersReady = [];
@@ -37,8 +40,8 @@ io.on('connection', (socket) => {
       winner.score = 0;
       winner.name = 'No one'
     }
-    
   })
+
 })
 
 http.listen(3000, () => {

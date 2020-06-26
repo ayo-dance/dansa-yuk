@@ -1,7 +1,7 @@
 <template>
   <v-card tile height="100%" color="blue">
     <v-card-title>
-      <h1>Let's Dance. Move your body finger!</h1>
+      <h1>Let's Dance. Move your finger!</h1>
     </v-card-title>
     <v-row justify="center">
       <v-dialog v-model="dialog" persistent max-width="600px">
