@@ -5,7 +5,7 @@
 </template>
 
 <style>
-#app {
+/* #app { */
   /* font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -14,7 +14,7 @@
   /* margin-top: 20vh;
   font-size: 20px;
   cursor: default; */
-}
+/* } */
 
 #nav {
   padding: 30px;

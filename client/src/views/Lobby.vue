@@ -2,7 +2,7 @@
   <div>
     <div class="jumbotron jumbotron-fluid">
       <div class="container">
-        <h1 class="display-4">In Room 1</h1>
+        <h1 class="display-4">In Room {{roomName}}</h1>
       </div>
     </div>
     <table class="table table-hover table-lobby">
@@ -11,43 +11,60 @@
           <th scope="col">Player's name</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody v-for="member in members" :key="member">
         <tr>
-          <th scope="row">1</th>
+          <th scope="row">{{member}}</th>
         </tr>
       </tbody>
-      <button type="button" class="btn btn-success">Start game!</button>
-      <button type="button" class="btn btn-danger">Exit game!</button>
+      <button type="button" class="btn btn-success" @click="startGame">Start game!</button>
+      <button type="button" class="btn btn-danger" @click="exitRoom">Exit game!</button>
     </table>
   </div>
 </template>
 
 <script>
-import io from 'socket.io-client';
+import socket from '../config/socket';
 
-const baseUrl = 'http://localhost:3000';
+// const baseUrl = 'http://localhost:3000';
 export default {
+  data(){
+    return {
+      roomName: ""
+    }
+  },
   methods: {
-    getrooms() {
-      this.sockets.emit('get-rooms');
+    getPlayer() {
+      this.sockets.emit('getPlayer');
     },
+    startGame() {
+      console.log("gameStart clicked")
+      this.$router.push('GameBoard')
+    },
+    exitRoom() {
+      localStorage.removeItem("roomID")
+      localStorage.removeItem("isLogin")
+      this.$router.push('login')
+    }
   },
   computed: {
-    sockets() {
-      return this.$store.state.socket;
-    },
-    rooms() {
-      return this.$store.state.rooms;
-    },
+    members() {
+      return (
+        this.$store.state.members
+      )
+    }
   },
   created() {
-    const socket = io(baseUrl);
-    this.$store.commit('SET_SOCKET', socket);
-    this.sockets.on('get-rooms', (rooms) => {
-      this.$store.commit('SET_ROOMS', rooms);
-    });
-    this.getrooms();
+    this.roomName = localStorage.getItem("roomName")
+    this.$store.dispatch("listenMember")
+    socket.on(`members-${this.roomName}`, (payload) => {
+      console.log(">>", payload)
+      this.$store.commit("SET_MEMBERS", payload)
+    })
   },
+  mounted() {
+    this.$store.dispatch("refreshRoom")
+    this.$store.dispatch("listenMember")
+  }
 };
 </script>
 

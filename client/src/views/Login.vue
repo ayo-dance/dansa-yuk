@@ -19,30 +19,31 @@
               id="exampleInputEmail1"
               aria-describedby="emailHelp"
               placeholder="Enter your name"
+              v-model="username"
             />
           </div>
-          <button type="submit" class="btn btn-primary">Enter Room</button>
+          
         </form>
         <form>
           <div class="form-group">
             <input
-              type="email"
+              type="text"
               class="form-control"
-              id="exampleInputEmail1"
               aria-describedby="emailHelp"
               placeholder="Create room"
+              v-model="roomName"
             />
           </div>
-          <button type="submit" class="btn btn-primary">Create Room</button>
+          <button type="submit" class="btn btn-primary" @click="addRoom">Create Room</button>
           <table class="table table-hover">
             <thead>
               <tr>
                 <th scope="col">Room's list</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody v-for="(room, index) in rooms" :key="index">
               <tr>
-                <th scope="row">Room 1</th>
+                <th scope="row">{{room.name}}</th> <button type="submit" class="btn btn-primary" @click="login(room.id, room.name)">Enter Room</button>
               </tr>
             </tbody>
           </table>
@@ -53,7 +54,40 @@
 </template>
 
 <script>
-export default {};
+export default {
+  name: 'Login',
+  computed: {
+    rooms() {
+      return (
+        this.$store.state.rooms
+      )
+    }
+  },
+  data(){
+    return {
+      username: "",
+      roomName: ""
+    }
+  },
+  methods: {
+    login(id, roomname) {
+      console.log(id, this.username)
+      localStorage.setItem("isLogin", this.username);
+      localStorage.setItem("roomID", id);
+      localStorage.setItem("roomName", roomname);
+      this.$store.commit("SET_ISLOGIN", true);
+      this.$store.dispatch("joinRoom")
+      this.$router.push("lobby");
+    },
+    addRoom() {
+      this.$store.dispatch("newRoom", this.roomName)
+    }
+  },
+  mounted() {
+    this.$store.dispatch("refreshRoom")
+    this.$store.dispatch("listenRoom")
+  }
+}
 </script>
 
 <style>
