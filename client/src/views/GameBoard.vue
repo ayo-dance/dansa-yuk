@@ -1,47 +1,57 @@
 <template>
   <v-card
-    class="d-flex justify-sm-space-around align-center"
+    class="d-flex justify-sm-space-around align-center bg-dance"
     tile
     height="100%"
-    color="blue"
   >
     <!-- One Component -->
     <v-hover>
       <template v-slot="{ hover }">
         <v-card
           :class="`elevation-${hover ? 24 : 6}`"
-          class="mx-auto pa-6 transition-swing"
+          class="mx-auto pa-6 transition-swing trans"
           width="500px"
           height="80%"
-          tile="false"
         >
-          <v-card color="yellow lighten-2" height="20%">
-            <h2 class="ml-4">Let's dance, {{ username }}!</h2>
-            <v-card-subtitle v-if="gameStatus == 'finish'">
-              <h3>
-                The winner is: {{ winner.name }} with {{ winner.score }} score
-              </h3>
+          <v-card height="25%" class="trans1">
+            <h2 v-if="gameStatus != 'finish'" class="ml-4 pt-4">
+              Let's dance, {{ username }}!
+            </h2>
+            <v-card-subtitle
+              class="d-flex flex-column align-center justify-center"
+              v-if="gameStatus == 'finish'"
+            >
+              <div v-if="winner.name != username">
+                <h1 class="mb-3 mt-5">Sorry, {{ username }} you loose!</h1>
+                <h1>Highest score: {{ winner.score }}</h1>
+              </div>
+              <div v-else>
+                <h1 class="mb-3 mt-5">
+                  Congratulation {{ winner.name }}, you win!
+                </h1>
+                <h1>Your score: {{ winner.score }}</h1>
+              </div>
             </v-card-subtitle>
 
-            <v-card-subtitle v-if="gameStatus == 'started'">
-              <h3>Remaining time: {{ timer }}</h3>
-              <h3 class="correct">Correct Move: {{ correct }}</h3>
-              <h3 class="wrong">Wrong Move: {{ incorrect }}</h3>
+            <v-card-subtitle
+              class="d-flex justify-space-between"
+              v-if="gameStatus == 'started'"
+            >
+              <div>
+                <h2 class="correct">Correct Move: {{ correct }}</h2>
+                <h2 class="wrong">Wrong Move: {{ incorrect }}</h2>
+              </div>
+              <div>
+                <h1>{{ timer }}</h1>
+              </div>
             </v-card-subtitle>
           </v-card>
 
-          <v-card
-            class="d-flex flex-column align-center"
-            color="yellow lighten-4"
-            height="50%"
-          >
-            <v-card-subtitle v-if="gameStatus == 'started'">
-              <h2 :class="message == 'Nice!' ? 'correct' : 'wrong'">
-                {{ message }}
-              </h2>
-            </v-card-subtitle>
-
-            <div v-if="gameStatus == 'started'">
+          <v-card class="d-flex flex-column align-center trans2" height="45%">
+            <h1 v-if="gameStatus == 'started'" class="mt-5 mb-5">
+              Follow my step!
+            </h1>
+            <div v-if="gameStatus == 'started'" class="mb-5">
               <i
                 v-if="moveKeyCode == 37"
                 class="fa fa-arrow-left arrow"
@@ -63,11 +73,15 @@
                 aria-hidden="true"
               ></i>
             </div>
+            <v-card-subtitle v-if="gameStatus == 'started'">
+              <h2 :class="message == 'Nice move!' ? 'correct' : 'wrong'">
+                {{ message }}
+              </h2>
+            </v-card-subtitle>
           </v-card>
 
           <v-card
-            class="d-flex align-center justify-center"
-            color="yellow lighten-3"
+            class="d-flex align-center justify-center trans3"
             height="20%"
           >
             <div>
@@ -100,8 +114,7 @@
           </v-card>
 
           <v-card
-            class="d-flex align-center justify-center"
-            color="yellow lighten-2"
+            class="d-flex align-center justify-center trans4"
             height="10%"
           >
             <v-card-subtitle v-if="gameStatus == 'countdown'">
@@ -138,6 +151,7 @@ import io from 'socket.io-client';
 import { mapState } from 'vuex';
 
 const socket = io('http://localhost:3000');
+
 export default {
   data() {
     return {
@@ -156,6 +170,7 @@ export default {
       buttonUp: '',
       buttonRight: '',
       buttonDown: '',
+      audio: '',
     };
   },
   methods: {
@@ -166,6 +181,7 @@ export default {
     gameStart() {
       this.correct = 0;
       this.incorrect = 0;
+      this.audio.play();
       this.timer = this.duration; // Hardcore!
       this.timeInterval = setInterval(() => {
         this.timer -= 1;
@@ -211,7 +227,7 @@ export default {
           event.keyCode === 40
         ) {
           if (event.keyCode === this.moveKeyCode) {
-            this.message = 'Nice!';
+            this.message = 'Nice move!';
             this.correct += 1;
             this.randomMove();
           } else {
@@ -234,6 +250,8 @@ export default {
         this.gameStatus = 'finish';
         clearInterval(this.timeInterval);
         this.$store.dispatch('sendScore', this.correct - this.incorrect);
+        this.audio.pause();
+        this.audio.currentTime = 0;
       }
     },
     countDown(val) {
@@ -259,6 +277,8 @@ export default {
     document.addEventListener('keydown', this.keyDownHandler, false);
     document.addEventListener('keyup', this.keyUpHandler, false);
     this.randomMove();
+    this.audio = new Audio('../assets/civil-war-drum.mp3');
+    this.audio.play();
   },
   computed: mapState(['username']),
 };
@@ -278,5 +298,25 @@ export default {
   font-size: 100px;
   cursor: default;
   color: #36a2eb;
+}
+.bg-dance {
+  background-size: cover;
+  background-position: center;
+  background-image: url('../assets/bg.jpg');
+}
+.trans {
+  background-color: rgba(68, 68, 250, 0.39);
+}
+.trans1 {
+  background-color: rgba(255, 241, 118, 0.85);
+}
+.trans2 {
+  background-color: rgba(255, 249, 196, 0.85);
+}
+.trans3 {
+  background-color: rgba(255, 245, 157, 0.85);
+}
+.trans4 {
+  background-color: rgba(255, 241, 118, 0.85);
 }
 </style>
