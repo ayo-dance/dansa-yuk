@@ -8,11 +8,9 @@
           width="250px"
           height="250px"
         >
-          <v-card-title>
-            <h1>{{ moveDirection }}</h1>
-          </v-card-title>
-
-          <v-card-subtitle>
+          <v-card-subtitle v-if="gameStatus == 'started'">
+            <h1 class="bigger">{{ moveDirection }}</h1>
+            <h2>{{ username }}</h2>
             <h2 :class="message == 'Nice!' ? 'correct' : 'wrong'">
               {{ message }}
             </h2>
@@ -21,21 +19,42 @@
             <h3 class="wrong">Wrong Move: {{ incorrect }}</h3>
           </v-card-subtitle>
 
+          <v-card-subtitle v-if="gameStatus == 'finish'">
+            <h3>
+              The winner is: {{ winner.name }} with {{ winner.score }} score
+            </h3>
+          </v-card-subtitle>
+
+          <v-card-subtitle v-if="gameStatus == 'countdown'">
+            <h3>Game started in: {{ countDown }}</h3>
+          </v-card-subtitle>
+
+          <v-card-subtitle v-if="gameStatus == 'waiting'">
+            <h3>Waiting other player</h3>
+          </v-card-subtitle>
+
           <v-card-actions>
             <v-btn
               v-if="gameStatus == 'standby'"
               color="primary"
-              @click="gameStart()"
+              @click="playerReady()"
             >
-              Start
+              Ready
             </v-btn>
             <v-btn
+              v-if="gameStatus == 'finish'"
+              color="primary"
+              @click="replay()"
+            >
+              Replay
+            </v-btn>
+            <!-- <v-btn
               v-else-if="gameStatus == 'started'"
               color="warning"
               @click="giveUp()"
             >
               Give Up
-            </v-btn>
+            </v-btn> -->
           </v-card-actions>
         </v-card>
       </template>
@@ -44,6 +63,10 @@
 </template>
 
 <script>
+import io from 'socket.io-client';
+import { mapState } from 'vuex';
+
+const socket = io('http://localhost:3000');
 export default {
   data() {
     return {
@@ -51,13 +74,19 @@ export default {
       moveDirection: '',
       gameStatus: 'standby',
       timer: '',
+      countDown: '',
       timeInterval: '',
       correct: 0,
       incorrect: 0,
       message: '',
+      winner: '',
     };
   },
   methods: {
+    playerReady() {
+      this.$store.dispatch('playerReady');
+      this.gameStatus = 'waiting';
+    },
     gameStart() {
       this.correct = 0;
       this.incorrect = 0;
@@ -66,6 +95,10 @@ export default {
         this.timer -= 1;
       }, 1000);
       this.gameStatus = 'started';
+    },
+    replay() {
+      this.gameStatus = 'standby';
+      this.message = '';
     },
     giveUp() {
       this.timer = 0;
@@ -102,15 +135,35 @@ export default {
   watch: {
     timer(val) {
       if (val === 0) {
-        this.gameStatus = 'standby';
+        this.gameStatus = 'finish';
         clearInterval(this.timeInterval);
+        this.$store.dispatch('sendScore', this.correct - this.incorrect);
       }
     },
+    countDown(val) {
+      if (val === 0) {
+        clearInterval(this.timeInterval);
+        this.gameStart();
+      }
+    },
+  },
+  created() {
+    socket.on('game-started', () => {
+      this.gameStatus = 'countdown';
+      this.countDown = 5;
+      this.timeInterval = setInterval(() => {
+        this.countDown -= 1;
+      }, 1000);
+    });
+    socket.on('game-winner', (winner) => {
+      this.winner = winner;
+    });
   },
   mounted() {
     document.addEventListener('keydown', this.keyDownHandler, false);
     this.randomMove();
   },
+  computed: mapState(['username']),
 };
 </script>
 
@@ -120,5 +173,8 @@ export default {
 }
 .correct {
   color: blue;
+}
+.bigger {
+  font-size: 2em;
 }
 </style>
