@@ -71,12 +71,17 @@ export default {
   },
   methods: {
     login(id, roomname) {
+      let paylod = {
+        username: this.username,
+        roomname: roomname
+      }
       console.log(id, this.username)
       localStorage.setItem("isLogin", this.username);
       localStorage.setItem("roomID", id);
       localStorage.setItem("roomName", roomname);
       this.$store.commit("SET_ISLOGIN", true);
       this.$store.dispatch("joinRoom")
+      this.$store.dispatch('playerLogin', paylod);
       this.$router.push("lobby");
     },
     addRoom() {

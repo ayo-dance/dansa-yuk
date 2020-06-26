@@ -9,7 +9,8 @@ export default new Vuex.Store({
     socket: null,
     isLogin: false,
     rooms: [],
-    members: []
+    members: [],
+    username: '',
   },
   mutations: {
     SET_ISLOGIN(state, payload) {
@@ -24,7 +25,10 @@ export default new Vuex.Store({
     SET_MEMBERS(state, payload) {
       console.log("masuk SetMember Store", payload)
       state.members = payload;
-    }
+    },
+    INSERT_USERNAME(state, username) {
+      state.username = username;
+    },
   },
   actions: {
     listenRoom({ commit }) {
@@ -55,7 +59,20 @@ export default new Vuex.Store({
     },
     newRoom() {
       console.log("ini newRoom")
-    }
+    },
+    playerLogin({ commit }, payload) {
+      commit('INSERT_USERNAME', payload.username);
+      socket.emit('player-login', payload );
+    },
+    playerReady({ state }) {
+      socket.emit('player-ready', { username: state.username });
+    },
+    sendScore({ state }, score) {
+      socket.emit('send-score', {
+        name: state.username,
+          score,
+        });
+      },
   },
   modules: {},
 });

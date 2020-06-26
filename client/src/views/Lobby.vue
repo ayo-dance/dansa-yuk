@@ -54,6 +54,10 @@ export default {
     }
   },
   created() {
+    socket.on(`game-standby-${this.roomName}`, () => {
+      this.$router.push('gameboard');
+    });
+
     this.roomName = localStorage.getItem("roomName")
     this.$store.dispatch("listenMember")
     socket.on(`members-${this.roomName}`, (payload) => {
