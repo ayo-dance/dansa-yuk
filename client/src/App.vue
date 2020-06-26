@@ -1,21 +1,14 @@
 <template>
-  <v-app>
-    <GameBoard />
-  </v-app>
+  <div id="app" class="container">
+    <router-view/>
+  </div>
 </template>
-
 <script>
-import GameBoard from '@/views/GameBoard.vue';
-
-export default {
-  name: 'App',
-
-  components: {
-    GameBoard,
-  },
-
-  data: () => ({
-    //
-  }),
-};
+  export default {
+    created(){
+      this.$store.dispatch("checkLogin")
+    }
+  };
 </script>
+<style>
+</style>
